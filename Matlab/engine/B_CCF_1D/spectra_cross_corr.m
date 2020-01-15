@@ -64,6 +64,16 @@ sp_tmp           = sp_tmp(:);
 wv_obs           = wv_obs(:);
 sp_obs           = sp_obs(:);
 
+% If the observed spectra covers a larger wavelength range than the model -
+% cut it to fit the model.
+if min(wv_obs) < min(wv_tmp) || max(wv_obs) > max(wv_tmp) ;
+    Indx  =  find(wv_obs<min(wv_tmp),1,'last');
+    Indx2 =  find(wv_obs>max(wv_tmp),1,'first');
+    wv_obs(Indx2-40:end) = []; sp_obs(Indx2-40:end) = [];
+    wv_obs(1:Indx+40)    = []; sp_obs(1:Indx+40)  = [];
+   
+end
+
 % 2) Move to log scale on the wavelength & interpulate.
 %    ------------------------------------------------
 delta_log_lambda = log( 1 + dv / c);

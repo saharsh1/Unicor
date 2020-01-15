@@ -58,7 +58,7 @@ function [obs] = SpecPreProcess(obs,FiltPar,BellPar,ExcludeOL)
 
 obsA = obs;
 N = 0;
-Size = 1e4;
+Size = max([1e4,2*max(size(obs{1}.wv))]);
 
 % This part implements SpecPreProc_main on the observed spec, taking into account the
 % changing size of the output spec.

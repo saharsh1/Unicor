@@ -42,12 +42,13 @@ TemplateDir     = fullfile(mFilePath,'templates');
 % Load the obs array.
 % See the details of the "obs" cell array contents a "calc_multi_order_velocity.m" header.
 if exist(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']),'file')
-    PreProcCheck = input('Processed obs file found. Repeat PreProc? [y/n] >> ','s');
+    PreProcCheck = input('Processed obs file found. Repeat PreProc? append? [y/n/a] >> ','s');
+    if isempty(PreProcCheck); PreProcCheck = 'n'; end;
 else
     PreProcCheck = 'y';
 end
 
-if PreProcCheck == 'y'
+if PreProcCheck == 'y' || PreProcCheck == 'a'
     load(fullfile(Dir,Fname)); 
 
 % Set the Pre-proccessing parameters 
@@ -63,10 +64,26 @@ if PreProcCheck == 'y'
     [keys, ~  ] = ini.GetKeys('ExcludeOutLiers');
     values      = ini.GetValues('ExcludeOutLiers', keys);
     ExcludeOL   = cell2struct(values,keys);
-   
+    
+% If User chose to append - find the unprocessed observations
+% ------------------------------------------------------------
+   if PreProcCheck == 'a' 
+    obsRAW      = obs;
+    load(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']));
+    nRAW        = length(obsRAW);
+    nReduced    = length(obs);
+    if nRAW <= nReduced; return; end
+    % Run Unicor2.0 Pre-processing routine, and save the data.
+    obs(nReduced+1:nRAW) = SpecPreProcess(obsRAW(nReduced+1:end),FiltPar,BellPar,ExcludeOL);  
+    save(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']),'obs','FiltPar','BellPar');
+   else
+       
+% If User chose to re-analyze all data
+% ------------------------------------------------------------ 
 % Run Unicor2.0 Pre-processing routine, and save the data.
     obs         = SpecPreProcess(obs,FiltPar,BellPar,ExcludeOL);  
     save(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']),'obs','FiltPar','BellPar');
+   end
 else
     load(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']));
 end
@@ -74,8 +91,21 @@ end
 % ========================================
 %
 
-if exist(fullfile(Dir,[Fname(1:end-4) '_TempPostProc.mat']),'file')
+if exist(fullfile(Dir,[ 'SummedObsTemplate.mat']),'file')
+   SumTmpCheck = input('Mean obs. file found. Use it as template? [y/n] >> ','s');
+   if isempty(SumTmpCheck); SumTmpCheck = 'n'; end
+else
+   SumTmpCheck = 'n';
+end
+
+if SumTmpCheck == 'y'
+    load('SummedObsTemplate.mat');
+end
+
+if exist(fullfile(Dir,[Fname(1:end-4) '_TempPostProc.mat']),'file') && SumTmpCheck ~= 'y';
     PreProcCheck = input('Processed template file found. Repeat PreProc? [y/n] >> ','s');
+elseif exist(fullfile(Dir,[Fname(1:end-4) '_TempPostProc.mat']),'file') && SumTmpCheck == 'y';
+    PreProcCheck = 'n';
 else
     PreProcCheck = 'y';
 end
@@ -115,14 +145,16 @@ if PreProcCheck == 'y'
     end
 % Rotational broadening, if required:    
     if isfield(TemplPars,'vsini')
-    template     = vsini_matrot(template,TemplPars.vsini,TemplPars.epsilon);
+        if TemplPars.vsini > 0
+        template     = vsini_matrot(template,TemplPars.vsini,TemplPars.epsilon);
+        end
     end
 % Gaussian broadening:
     template     = inst_broad(template,TemplPars.R);
     template     = TempPreProcess(template,obs{1}.wv,DeltaV,FiltPar,BellPar);       % Prepares PHOENIX temp for cross-correlation analysis using 'SpecPreProc_main' of Unicor2.
 
     save(fullfile(Dir,[Fname(1:end-4) '_TempPostProc.mat']),'template','FiltPar','BellPar');
-else
+elseif SumTmpCheck ~= 'y'
      load(fullfile(Dir,[Fname(1:end-4) '_TempPostProc.mat']));
 end
 
@@ -143,6 +175,7 @@ if PreProcCheck == 'y'
     
     [v,CCF,CCFpeaks,CCFRMS] = calc_multi_order_velocity(obs,template,CCFpars); % CCF and velocity calculation
     save(fullfile(Dir,[Fname(1:end-4) '_CCF.mat']),'v','CCF','CCFpars','CCFpeaks','CCFRMS');
+    
 else
     load(fullfile(Dir,[Fname(1:end-4) '_CCF.mat']));
 end
@@ -157,10 +190,24 @@ RVpars       = cell2struct(values,keys);
 % Determine what is the required initial set of  orders to be used.
 CCFpk_vec    = mean(CCFpeaks);
 CCFRMS_vec   = mean(CCFRMS);
+
+figure
+subplot(2,1,1);
+plot(CCFpk_vec ,'ok','markerfacecolor','k'); grid on; 
+ylabel('<CCF peak>');
+subplot(2,1,2);
+plot(CCFpk_vec ./ CCFRMS_vec ,'ok','markerfacecolor','k'); grid on;
+ylabel('<CCF>/<RMS>');
+
+
 I0 = CCFpk_vec > RVpars.CCFminPeak & CCFpk_vec > RVpars.CCFpk2RMS*CCFRMS_vec;
+% Remove CHIRON telluric orders
+% I0([42,50]) = 0;
+
 [vels, evels] = MatrixRV(v,RVpars.IterN,RVpars.C,RVpars.SigThr,I0); 
 
-
+OrdNum = 1:1:length(CCFpk_vec);
+fprintf(['List of orders passed to MatrixRV: ' num2str(OrdNum(I0)) ' \n']);
 for i = 1:length(obs)
     jd(i) = obs{i}.bjd;
 end

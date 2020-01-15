@@ -82,7 +82,8 @@ epsilon0  =  V - repmat(v0,1,Nord);
  
 % With no systematic errors, we expect each column j  in the epsilon(i,j) matrix, which corresponds to the j-th
 % order, to be scattered evenly around zero. An initial estimate of the systematic shift of an order
-delta0    =  trimmean(epsilon0,10,1,'weighted');
+% delta0    =  trimmean(epsilon0,10,1,'weighted');
+delta0    =  median(epsilon0,1);%
 
 % The scatter of order j, at the current iteration, is derived from the median absolute deviation of
 % the corrected error matrix,
@@ -115,7 +116,8 @@ for k = 1 :IterN
     epsilon_k  = V_k - repmat(v_k,1,Nord_k);
  
     % The k-th estimate of the systematic shift of an order
-    delta_k    =  trimmean(epsilon_k,10,1,'weighted');
+    % delta_k    =  trimmean(epsilon_k,10,1,'weighted');
+    delta_k    =  median(epsilon_k,1);
 
     % The scatter of order j, at the current iteration
     %sigma_k    = 1.4826*mad(epsilon_k - repmat(delta_k,Nobs,1),1,1);
