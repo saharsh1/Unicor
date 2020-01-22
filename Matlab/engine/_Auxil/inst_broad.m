@@ -20,7 +20,7 @@ function [template] = inst_broad(template,R)
       
 %     inst broaden is the FWHM. convert to sigma and to v/c.
       broaden_sigma        = (1/R)/2.35482;      
-      broadening_gaussian  = gaussmf((-2*broaden_sigma:LL_diff:2*broaden_sigma),[broaden_sigma 0]); % Gaussian filter in log-lambda axis.
+      broadening_gaussian  = GaussianCurve((-2*broaden_sigma:LL_diff:2*broaden_sigma),[broaden_sigma 0]); % Gaussian filter in log-lambda axis.
       normalization_factor = sum(broadening_gaussian);
       broadening_gaussian  = broadening_gaussian/normalization_factor;
       
