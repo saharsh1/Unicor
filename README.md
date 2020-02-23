@@ -33,23 +33,23 @@ UNICOR
    ```
 
    
-
-The code will generate the following variables:
-
-- time - observation time, as were saved in the mat file.
+   
+   The code will generate the following variables:
+   
+   - time - observation time, as were saved in the mat file.
    - vels - radial velocities, in km/s.
    - evels - errors on the radial velocities.
    - CCF - an array of structures containing the CCF  data for each of the observations.
-   
-   
-   
-   For example, in order to analyze the example spectra of HD95363, type:
-   
-   ```matlab
-   [jd,vels,evels,CCF] = Unicor2execution('HD95363_Example', 'HD95363')
-   ```
-   
-   **Note**: *If you run Unicor2execution() without any parameters, a file dialog will prompt you for the mat file.*
+
+
+
+For example, in order to analyze the example spectra of HD95363, type:
+
+```matlab
+[jd,vels,evels,CCF] = Unicor2execution('HD95363_Example', 'HD95363')
+```
+
+**Note**: *If you run Unicor2execution() without any parameters, a file dialog will prompt you for the mat file.*
 
 
 
