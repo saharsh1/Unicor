@@ -33,8 +33,9 @@ UNICOR
    ```
 
    
+
 The code will generate the following variables:
-   
+
 - time - observation time, as were saved in the mat file.
    - vels - radial velocities, in km/s.
    - evels - errors on the radial velocities.
@@ -52,7 +53,7 @@ The code will generate the following variables:
 
 
 
-3. Input data structure:
+3. ###### Input data structure:
 
    The mat file contains a cell array. Each cell contains a structure that holds that data for a single observation, in the following fields : 
 
@@ -69,7 +70,6 @@ The code will generate the following variables:
      **Note:** *wv and sp must have the same number of rows (np) in all the orders and observations.*
      *This can be achieved either by trimming the  wv and sp vectors to the same common length, or by padding the wv and sp with NaN's to a common number of points.*
      
-
 
 ------
 
