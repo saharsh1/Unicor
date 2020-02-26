@@ -49,7 +49,9 @@ else
 end
 
 if PreProcCheck == 'y' || PreProcCheck == 'a'
-    load(fullfile(Dir,Fname)); 
+    tmpload = load(fullfile(Dir,Fname));
+    fldnames = fieldnames(tmpload);
+    obs = getfield(tmpload,fldnames{1});
 
 % Set the Pre-proccessing parameters 
 % -------------------------------------
@@ -85,7 +87,9 @@ if PreProcCheck == 'y' || PreProcCheck == 'a'
     save(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']),'obs','FiltPar','BellPar');
    end
 else
-    load(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']));
+    tmpload = load(fullfile(Dir,[Fname(1:end-4) '_PostProc.mat']));
+    fldnames = fieldnames(tmpload);
+    obs = getfield(tmpload,fldnames{1});
 end
 % 2) Pre Proccess the theoretical template:
 % ========================================
